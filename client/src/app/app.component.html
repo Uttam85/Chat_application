@@ -1,0 +1,86 @@
+<div class="chat-container">
+  <!-- Left Section -->
+  <div class="left-section">
+      <button class="create-room-button" (click)="createRoom()">Create Room</button>
+      <input type="text" class="search-room" placeholder="Search Room" [(ngModel)]="roomSearchTerm" (ngModelChange)="searchRooms()">
+      <div class="room" *ngFor="let room of filteredRooms">
+          <span class="room-name" (click)="selectRoom(room)">
+              {{ room.name }}
+          </span>
+          <button class="join-room-button" *ngIf="!joinedRooms.has(room.name)" (click)="joinRoom(room)">
+              <i class="material-icons">join</i> 
+          </button>
+          <span *ngIf="joinedRooms.has(room.name)" class="joined-room-indicator">
+             <i class="material-icons">done</i>
+          </span>
+      </div>
+  </div>
+
+  <!-- Middle Section -->
+  <div class="middle-section" *ngIf="selectedRoom && users.length > 0">
+      <div class="room-header">
+          <div class="room-name">{{ selectedRoom.name }}</div>
+          <div class="room-status">{{ selectedRoom.status }}</div>
+      </div>
+
+      <input type="text" class="search-chat" placeholder="Search chat" [(ngModel)]="searchTerm" (ngModelChange)="searchMessages()">
+
+      <div class="message" *ngFor="let message of filteredMessages">
+          <div class="avatar">{{ message.sender[0] }}</div>
+          <div class="message-content">
+              <div *ngIf="message.isEdited" class="edited-message">
+                  <em>(Edited)</em> {{ message.editedContent }}
+              </div>
+              <div class="message-text">{{ message.content }}</div>
+
+              <!-- Emoji reactions section -->
+              <div class="emoji-reactions" *ngIf="message.reactions && message.reactions.length > 0">
+                  <span *ngFor="let reaction of message.reactions" class="emoji-reaction">
+                      {{ reaction.emoji }} {{ reaction.count }}
+                  </span>
+              </div>
+          </div>
+
+          <div class="message-timestamp">{{ message.timestamp | date:'shortTime' }}</div>
+
+          <!--  show edit and delete icons only for the sender message -->
+          <div class="message-actions">
+              <span *ngIf="currentUser?.name === message.sender" class="edit-icon" (click)="editMessage(message)">✎</span>
+              <span *ngIf="currentUser?.name === message.sender" class="delete-icon" (click)="deleteMessage(message)">&#x2716;</span>
+              <span class="reply-icon" (click)="replyToMessage(message)">&#x27A4;</span> 
+              <!-- Emoji picker-->
+               <!-- <app-emoji-reaction-component (emojiSelected)="toggleEmojiPicker(message)"></app-emoji-reaction-component> -->
+              <span class="emoji-popup" (click)="toggleEmojiPicker(message)">😊</span>
+            </div>
+
+
+          <!-- Emoji picker -->
+          <div class="emoji-popup" *ngIf="message.showEmojiPicker">
+              <span *ngFor="let emoji of emojis" (click)="addEmojiReaction(message, emoji)">
+                  {{ emoji }}
+              </span>
+          </div>
+      </div>
+
+      <!-- Chat Input Section -->
+      <div class="message-input">
+          <input [(ngModel)]="newMessage" (keydown.enter)="sendMessage()" type="text" class="message-box" placeholder="Type a message">
+          <span class="upload-icon">📎</span>
+          <button class="send-button" (click)="sendMessage()">Send</button>
+      </div>
+  </div>
+
+  <!-- Right Section -->
+  <div class="right-section" *ngIf="selectedRoom && users.length > 0">
+      <div class="user" *ngFor="let user of users">
+          <div class="avatar">{{ user.name[0] }}</div>
+          <div class="user-info">
+              <div class="user-name">{{ user.name }}</div>
+              <div class="user-status">
+                  <span class="status-dot" [ngClass]="user.isOnline ? 'online' : 'offline'"></span>
+                  {{ user.isOnline ? 'Online' : 'Offline' }}
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
